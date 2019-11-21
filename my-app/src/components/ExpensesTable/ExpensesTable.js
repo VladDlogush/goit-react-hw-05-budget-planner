@@ -1,6 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Notyf from 'notyf-js';
+import 'notyf-js/dist/notyf.min.css';
 import styles from './ExpensesTable.module.css';
+
+const notyf = new Notyf();
 
 const ExpensesTable = ({ items, onRemove }) => (
   <table className={styles.table}>
@@ -19,7 +23,10 @@ const ExpensesTable = ({ items, onRemove }) => (
           <td className={styles.td}>
             <button
               className={styles.button}
-              onClick={() => onRemove(id)}
+              onClick={() => {
+                notyf.confirm('Your expense have been successfully deleted!');
+                onRemove(id);
+              }}
               type="button"
             >
               Delete

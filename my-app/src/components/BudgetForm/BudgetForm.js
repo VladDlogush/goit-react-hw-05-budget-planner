@@ -1,13 +1,17 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Notyf from 'notyf-js';
+import 'notyf-js/dist/notyf.min.css';
 import { connect } from 'react-redux';
 import styles from './BudgetForm.module.css';
 import { saveBudget } from '../../redux/actions';
 
+const notyf = new Notyf();
+
 class BudgetForm extends Component {
   constructor(props) {
     super(props);
-    this.state = { budget: 0 };
+    this.state = { budget: '' };
   }
 
   handleChange = e => {
@@ -19,9 +23,14 @@ class BudgetForm extends Component {
   handleSubmit = e => {
     e.preventDefault();
 
-    this.props.onSave(Number(this.state.budget));
+    if (Number(this.state.budget) >= 0) {
+      this.props.onSave(Number(this.state.budget));
+      notyf.confirm('Your changes have been successfully saved!');
+    } else {
+      notyf.alert('Enter the correct amount');
+    }
 
-    this.setState({ budget: 0 });
+    this.setState({ budget: '' });
   };
 
   render() {

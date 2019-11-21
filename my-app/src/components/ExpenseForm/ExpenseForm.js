@@ -1,16 +1,21 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Notyf from 'notyf-js';
+import 'notyf-js/dist/notyf.min.css';
 import { connect } from 'react-redux';
 import shortid from 'shortid';
 import { addExpense } from '../../redux/actions';
+import { getBudget } from '../../redux/selectors';
 import styles from './ExpenseForm.module.css';
+
+const notyf = new Notyf();
 
 class ExpenseForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
       name: '',
-      amount: 0,
+      amount: '',
     };
   }
 
@@ -23,16 +28,29 @@ class ExpenseForm extends Component {
   handleSubmit = e => {
     e.preventDefault();
     const { name, amount } = this.state;
+    const { budget } = this.props;
 
-    const expense = {
-      id: shortid.generate(),
-      name,
-      amount: Number(amount),
-    };
+    if (!budget) {
+      notyf.warn('Operation is not possible. Your balance is 0$');
 
-    this.props.onSave(expense);
+      this.setState({ name: '', amount: '' });
+      return;
+    }
 
-    this.setState({ name: '', amount: 0 });
+    if (name === '' || amount <= 0) {
+      notyf.alert('Enter a correct number or fill in all the fields');
+    } else {
+      const expense = {
+        id: shortid.generate(),
+        name,
+        amount: Number(amount),
+      };
+      notyf.confirm('Your changes have been successfully saved!');
+
+      this.props.onSave(expense);
+    }
+
+    this.setState({ name: '', amount: '' });
   };
 
   render() {
@@ -81,13 +99,18 @@ class ExpenseForm extends Component {
 
 ExpenseForm.propTypes = {
   onSave: PropTypes.func.isRequired,
+  budget: PropTypes.number.isRequired,
 };
+
+const mapStateToProps = state => ({
+  budget: getBudget(state),
+});
 
 const mapDispatchToProps = dispatch => ({
   onSave: expense => dispatch(addExpense(expense)),
 });
 
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps,
 )(ExpenseForm);
