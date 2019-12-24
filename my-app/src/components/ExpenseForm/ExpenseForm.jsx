@@ -5,7 +5,7 @@ import 'notyf-js/dist/notyf.min.css';
 import { connect } from 'react-redux';
 import shortid from 'shortid';
 import { addExpense } from '../../redux/actions';
-import { getBudget } from '../../redux/selectors';
+import { getBudget, calculateBalance } from '../../redux/selectors';
 import styles from './ExpenseForm.module.css';
 
 const notyf = new Notyf();
@@ -28,10 +28,12 @@ class ExpenseForm extends Component {
   handleSubmit = e => {
     e.preventDefault();
     const { name, amount } = this.state;
-    const { budget } = this.props;
+    const { budget, balance } = this.props;
 
-    if (!budget) {
-      notyf.warn('Operation is not possible. Your balance is 0$');
+    if (!budget || balance < amount) {
+      notyf.warn(
+        'Operation is not possible. Your budget is $ 0 or your spending outweighs the balance',
+      );
 
       this.setState({ name: '', amount: '' });
       return;
@@ -104,6 +106,7 @@ ExpenseForm.propTypes = {
 
 const mapStateToProps = state => ({
   budget: getBudget(state),
+  balance: calculateBalance(state),
 });
 
 const mapDispatchToProps = dispatch => ({
